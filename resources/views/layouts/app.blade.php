@@ -187,7 +187,6 @@
                                             <i data-lucide="bell-check" class="w-7 h-7"></i>
                                         </div>
                                         <p class="font-black text-gray-950">Aucune notification</p>
-                                        <p class="text-sm text-gray-500 mt-1">Tout est clair pour le moment.</p>
                                     </div>
                                 @endif
 

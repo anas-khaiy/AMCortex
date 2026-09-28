@@ -34,6 +34,7 @@ class AuthController extends Controller
             'username' => $request->username,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
+            'name' => trim($request->first_name . ' ' . $request->last_name),
             'email' => $request->email,
             'password' => Hash::make($request->password), // Cryptage du mot de passe
         ]);
@@ -199,8 +200,11 @@ public function showForgotEmail()
 public function sendForgotEmail(Request $request)
 {
     $request->validate([
-        'username' => 'required|string|exists:users,username',
-    ]);
+    'username' => 'required|string|exists:users,username',
+], [
+    'username.required' => 'Veuillez saisir votre nom d’utilisateur.',
+    'username.exists' => 'Aucun compte n’est associé à ce nom d’utilisateur. Vérifiez les informations saisies puis réessayez.',
+]);
 
     $user = User::where('username', $request->username)->first();
 

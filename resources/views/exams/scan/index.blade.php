@@ -87,6 +87,9 @@
                 </div>
             @endforelse
         </div>
+        <div class="mt-6">
+            {{ $exams->links() }}
+        </div>
     @else
 
         @php

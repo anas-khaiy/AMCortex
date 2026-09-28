@@ -26,9 +26,13 @@ return new class extends Migration
     DB::statement("UPDATE users SET first_name = username WHERE first_name IS NULL OR first_name = ''");
     DB::statement("UPDATE users SET last_name = '' WHERE last_name IS NULL");
 
-    Schema::table('users', function (Blueprint $table) {
-        $table->unique('username');
-    });
+    try {
+        Schema::table('users', function (Blueprint $table) {
+            $table->unique('username');
+        });
+    } catch (\Throwable $e) {
+        // Index already exists
+    }
 }
 
     /**

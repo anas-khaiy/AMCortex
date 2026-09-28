@@ -63,7 +63,9 @@ private function examFolderName(Exam $exam): string
     }
 
     // Récupérer tous les examens du prof pour la liste de sélection
-    $exams = Exam::where('teacher_id', $teacherId)->get();
+    $exams = Exam::where('teacher_id', $teacherId)
+    ->latest()
+    ->paginate(6);
 
     return view('exams.scan.index', compact('exam', 'exams', 'stats'));
 }
@@ -707,11 +709,13 @@ public function resultatsPage(Exam $exam)
                 continue;
             }
 
+            $note = (float) ($row[3] ?? 0);
+
             $results[] = [
                 'copie' => $row[0] ?? '',
                 'code'  => $row[1] ?? '',
                 'nom'   => $row[2] ?? '',
-                'note'  => $row[3] ?? '',
+                'note'  => max(0, $note),
             ];
         }
 

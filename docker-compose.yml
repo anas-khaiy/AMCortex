@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: amcortex-app
+    container_name: amcortex-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - amcortex-network
+    depends_on:
+      - db
+
+  webserver:
+    image: nginx:alpine
+    container_name: amcortex-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker-compose/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - amcortex-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: amcortex-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-amcortex}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - amcortex-network
+
+networks:
+  amcortex-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

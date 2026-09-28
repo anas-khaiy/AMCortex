@@ -98,13 +98,25 @@ class AnalyticsController extends Controller
 
                 $sessionLabel = $row->session->label ?? 'Correction';
 
+                $mode = $row->session->mode ?? 'anonymous';
+
+                $sessionMode = match ($mode) {
+                    'named', 'nominative' => 'nominative',
+                    'anonymous'           => 'anonyme',
+                    default               => ucfirst($mode),
+                };
+
                 return [
-                    'label' => $studentName . ' — ' . $sessionLabel,
+                    'label' => $studentName . ' — ' . $sessionLabel . ' (' . $sessionMode . ')',
                     'student' => $studentName,
                     'session' => $sessionLabel,
+                    'mode' => $sessionMode,
                     'note' => $percent,
                     'raw' => $raw,
-                    'color' => $palette[$rowIndex % count($palette)] ?? $examColor,
+
+                    'color' => $sessionMode === 'nominative'
+                        ? '#def067' 
+                        : '#17dffa',
                 ];
             });
 

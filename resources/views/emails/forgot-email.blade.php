@@ -30,6 +30,8 @@
         </div>
     @endif
 
+    
+
     <form method="POST" action="{{ route('forgot.email.send') }}" class="space-y-5">
         @csrf
 

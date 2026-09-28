@@ -222,6 +222,8 @@ private function cleanAmcTxt($text)
         $pdfPath = storage_path('app/liste_presence_' . $exam->id . '.pdf');
 
         Browsershot::html($html)
+            ->setChromePath('/usr/bin/chromium')
+            ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'])
             ->format('A4')
             ->margins(10, 10, 10, 10)
             ->showBackground()
@@ -334,18 +336,39 @@ private function cleanAmcTxt($text)
 
         foreach ($allNamedStudents as $s) {
             // 1) Pour association automatique AMC : sans BOM, sans LaTeX
-            $csvAssociation .= "{$s->student_code},{$s->first_name},{$s->last_name}\n";
+            //$csvAssociation .= "{$s->student_code},{$s->first_name},{$s->last_name}\n";
+            $displayName = $s->first_name . ' ' . $s->last_name . ' - ' . $s->student_code;
+
+            $csvAssociation .= "{$s->student_code},{$displayName},\n";
 
             // 2) Pour affichage PDF arabe AMC : sans BOM, avec arabicfont
-            if ($this->isArabicExam($exam)) {
-                $firstNamePdf = "{\\arabicfont " . $s->first_name . "}";
-                $lastNamePdf  = "{\\arabicfont " . $s->last_name . "}";
-            } else {
-                $firstNamePdf = $s->first_name;
-                $lastNamePdf  = $s->last_name;
-            }
+            //if ($this->isArabicExam($exam)) {
+              //  $firstNamePdf = "{\\arabicfont " . $s->first_name . "}";
+               // $lastNamePdf  = "{\\arabicfont " . $s->last_name . "}";
+            // } else {
+               // $firstNamePdf = $s->first_name;
+               // $lastNamePdf  = $s->last_name;
+            //}
 
-            $csvPdf .= "{$s->student_code},{$firstNamePdf},{$lastNamePdf}\n";
+            // $csvPdf .= "{$s->student_code},{$firstNamePdf},{$lastNamePdf}\n";
+
+            if ($this->isArabicExam($exam)) {
+    $displayNamePdf =
+        "{\\arabicfont " .
+        $s->first_name . " " .
+        $s->last_name . " - " .
+        $s->student_code .
+        "}";
+
+    $csvPdf .= "{$s->student_code},{$displayNamePdf},\n";
+} else {
+    $displayNamePdf =
+        $s->first_name . ' ' .
+        $s->last_name . ' - ' .
+        $s->student_code;
+
+    $csvPdf .= "{$s->student_code},{$displayNamePdf},\n";
+}
 
             // 3) Pour Excel seulement : avec BOM, sans LaTeX
             $csvExcel .= "{$s->student_code},{$s->first_name},{$s->last_name}\n";
@@ -533,6 +556,11 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
 
      private function buildAmcTxt(Exam $exam, $copies, $layoutMode, $shuffle, $idLength, $mode = 'anonymous', $selectedStudents = null)
     {
+       // dd([
+    //'mode' => $mode,
+    //'nb_students' => $selectedStudents?->count(),
+    //'students' => $selectedStudents?->take(3),
+//]);
         $lines = [];
     
         
@@ -679,8 +707,8 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
             $optionsStr = !empty($options) ? "[" . implode(",", $options) . "]" : "";
 
             // --- 3. BARÈME {b=1,m=0} ---
-            $b = $question->points_correct ?? 1;
-            $m = $question->points_penalty ?? 0;
+            $b = (float) ($question->points_correct ?? 1);
+            $m = -(float) ($question->points_penalty ?? 0);
 
             if ($isMultiple) {
                 $baremeStr = "{formula=(NMC>0 ? 0 : NBC/NB*$b)}";
@@ -707,7 +735,7 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
             $lines[] = ""; // Espace entre les questions
         }
     
-    return implode("\n", $lines);
+     return implode("\n", $lines);
 }
 
 
@@ -735,6 +763,8 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
 
     private function addExamContent(&$lines, $exam, $shuffle, $isA3, $layoutMode, $mode, $student = null, $idLength = 0) {
      
+        dd($student);
+
         $validQuestions = $exam->questions->filter(fn($q) => trim($q->question_text) !== '');
         $questionCount = $validQuestions->count();
 
@@ -760,6 +790,23 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
                 if ($student) {
                     $lines[] = '\noindent \textbf{Nom :} ' . $this->cleanLatex($student->first_name . ' ' . $student->last_name, $isArabic) . ' \quad ';
                     $lines[] = '\textbf{Code :} ' . $this->cleanLatex($student->student_code) . '\par \vspace{4mm}';
+                }
+
+                $isNamed = ($mode === 'named' && $student);
+
+                if ($isNamed) {
+                    $texts = $this->getExamTexts($exam->exam_language ?? 'fr');
+
+                    $lines[] = '\noindent \textbf{' .
+                        $this->cleanLatex($texts['student_name_label'], $isArabic)
+                        . '} ' .
+                        $this->cleanLatex(
+                            $student->first_name . ' ' . $student->last_name,
+                            $isArabic
+                        ) . '\\';
+
+                    $lines[] = '\textbf{Code :} ' . $student->student_code . '\par \vspace{4mm}';
+
                 }
 
                 // --- Ligne verticale A3 entre colonnes ---
@@ -940,7 +987,7 @@ public function downloadCsv(Exam $exam) {
     <note_grain>0.5</note_grain>
     <note_max>' . (int) ($exam->total_points ?: $exam->total_calculated_points) . '</note_max>
     <note_max_plafond>1</note_max_plafond>
-    <note_min/>
+    <note_min>0</note_min>
     <note_null>0</note_null>
     <notes>notes.xml</notes>
     <pdf_password/>
@@ -1267,11 +1314,13 @@ private function buildArabicAmcTxt(Exam $exam, $layoutMode, $idLength, $mode = '
 
         $optionsStr = !empty($options) ? "[" . implode(",", $options) . "]" : "";
 
-        $b = $question->points_correct ?? 1;
-        $m = $question->points_penalty ?? 0;
+        $b = (float) ($question->points_correct ?? 1);
+        $m = -(float) ($question->points_penalty ?? 0);
 
         if ($isMultiple) {
-            $baremeStr = "{formula=(NMC>0 ? 0 : NBC/NB*$b)}";
+            //$baremeStr = "{formula=(NMC>0 ? 0 : NBC/NB*$b)}";
+            $penalty = (float) ($question->points_penalty ?? 0);
+            $baremeStr = "{formula=((NBC/NB*$b)-(NMC*$penalty)>0 ? (NBC/NB*$b)-(NMC*$penalty) : 0)}";
         } else {
             $baremeStr = "{b=$b,m=$m}";
         }
@@ -1418,6 +1467,8 @@ public function downloadStudentsPresencePdf(Exam $exam)
     $pdfPath = storage_path('app/liste_presence_' . $exam->id . '.pdf');
 
     Browsershot::html($html)
+        ->setChromePath('/usr/bin/chromium')
+        ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'])
         ->format('A4')
         ->margins(10, 10, 10, 10)
         ->showBackground()

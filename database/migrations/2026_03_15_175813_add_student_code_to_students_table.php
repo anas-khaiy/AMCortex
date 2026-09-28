@@ -10,13 +10,13 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::table('students', function (Blueprint $table) {
-        // On ajoute la colonne après l'ID
-        // On la met en 'nullable' temporairement si tu as déjà des étudiants
-        $table->string('student_code')->nullable()->unique()->after('id');
-    });
-}
+    {
+        if (!Schema::hasColumn('students', 'student_code')) {
+            Schema::table('students', function (Blueprint $table) {
+                $table->string('student_code')->nullable()->unique()->after('id');
+            });
+        }
+    }
 
 public function down(): void
 {
