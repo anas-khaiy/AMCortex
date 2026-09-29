@@ -39,6 +39,8 @@ services:
       MYSQL_USER: ${DB_USERNAME:-amcortex_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-AMCortex_Secure_P@ssw0rd_2026!}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-AMCortex_Secure_P@ssw0rd_2026!}
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
