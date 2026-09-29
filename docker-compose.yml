@@ -19,7 +19,7 @@ services:
     container_name: amcortex-webserver
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "80:80"
     volumes:
       - .:/var/www
       - ./docker-compose/nginx/conf.d:/etc/nginx/conf.d
