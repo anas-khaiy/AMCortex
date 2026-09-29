@@ -32,7 +32,18 @@ chmod -R 777 storage bootstrap/cache
 
 # Wait for database connection
 echo "Waiting for database..."
-until php -r "try { new PDO('mysql:host='.getenv('DB_HOST').';dbname='.getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD')); exit(0); } catch (Exception \$e) { exit(1); }"; do
+until php -r "
+    \$host = getenv('DB_HOST') ?: 'db';
+    \$db   = getenv('DB_DATABASE') ?: 'amcortex';
+    \$user = getenv('DB_USERNAME') ?: 'amcortex_user';
+    \$pass = getenv('DB_PASSWORD') ?: 'AMCortex_Secure_P@ssw0rd_2026!';
+    try {
+        new PDO(\"mysql:host=\$host;dbname=\$db\", \$user, \$pass);
+        exit(0);
+    } catch (Exception \$e) {
+        exit(1);
+    }
+"; do
     sleep 2
 done
 
