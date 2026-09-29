@@ -11,6 +11,8 @@ services:
       - .:/var/www
     networks:
       - amcortex-network
+    env_file:
+      - .env
     depends_on:
       - db
 
