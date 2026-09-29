@@ -36,8 +36,9 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-amcortex}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: ${DB_USERNAME:-amcortex_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-AMCortex_Secure_P@ssw0rd_2026!}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-AMCortex_Secure_P@ssw0rd_2026!}
     ports:
       - "3306:3306"
     volumes:
