@@ -165,7 +165,7 @@ public function uploadScans(Request $request, Exam $exam)
 
         for ($i = 0; $i < 10; $i++) {
             $checksOutput = [];
-            $checkCmd = "wsl bash -c " . escapeshellarg(
+            $checkCmd = (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg(
                 "pdfinfo " . escapeshellarg($pdfWsl) . " >/dev/null 2>&1"
             );
 
@@ -223,7 +223,7 @@ public function uploadScans(Request $request, Exam $exam)
                "pdfinfo {$pdfWslEscaped} && " .
                "pdftoppm -r 300 -jpeg {$pdfWslEscaped} {$baseNameEscaped}";
 
-        exec("wsl bash -c " . escapeshellarg($cmd) . " 2>&1", $output, $ret);
+        exec((PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg($cmd) . " 2>&1", $output, $ret);
 
         Log::info('Conversion PDF -> JPG', [
             'exam_id' => $exam->id,
@@ -339,7 +339,7 @@ public function analyseScans(Exam $exam)
            "--data ./data --projet . --multiple $imagesArg";
 
     $output = [];
-    $fullCommand = "wsl bash -c " . escapeshellarg($cmd) . " 2>&1";
+    $fullCommand = (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg($cmd) . " 2>&1";
 
     exec($fullCommand, $output, $ret);
 
@@ -507,7 +507,7 @@ public function gradeScans(Exam $exam)
     $out = [];
     $ret = 0;
 
-    exec("wsl bash -c " . escapeshellarg($cmd) . " 2>&1", $out, $ret);
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg($cmd) . " 2>&1", $out, $ret);
 
     Log::info('AMC grading command', [
         'exam_id' => $exam->id,
@@ -661,7 +661,7 @@ private function prepareAmcProject($workDir, $wslPath)
         }
     }
 
-    exec("wsl chmod -R 777 " . escapeshellarg($wslPath));
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl chmod " : "chmod ") . "-R 777 " . escapeshellarg($wslPath));
 }
 
 public function analysePage(Exam $exam)
@@ -1590,7 +1590,7 @@ private function generateCorrectedCopiesZip(Exam $exam, ResultSession $session):
     $cmd = "cd " . escapeshellarg($wslPath) . " && " .
            "auto-multiple-choice annotate --data ./data --projet . --cr ./cr";
 
-    exec("wsl bash -c " . escapeshellarg($cmd) . " 2>&1", $out, $ret);
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg($cmd) . " 2>&1", $out, $ret);
 
     if ($ret !== 0) {
         \Log::error('AMC annotate error', [

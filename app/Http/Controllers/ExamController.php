@@ -243,12 +243,12 @@ private function cleanAmcTxt($text)
     $layoutMode = $request->input('layout_mode', 'ensemble');
 
     $workDir = storage_path("app/amc/" . $this->examFolderName($exam));
-    $wslPath = "/mnt/c" . str_replace(['C:', '\\'], ['', '/'], $workDir);
+    $wslPath = PHP_OS_FAMILY === 'Windows' ? "/mnt/c" . str_replace(['C:', '\\'], ['', '/'], $workDir) : str_replace('\\', '/', $workDir);
 
     $this->prepareAmcProject($workDir, $wslPath);
 
     //  CLEANUP AVANT de recréer source.txt
-    $cleanupCommand = "wsl bash -c " . escapeshellarg(
+    $cleanupCommand = (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg(
         "cd $wslPath && " .
         "rm -f DOC-*.pdf DOC-*.xy DOC-*.tex DOC-*.latex DOC-*.amc DOC-*.aux DOC-*.log state.html saved-*.zip amc-compiled.* source_filtered.tex && " .
         "rm -f data/layout.sqlite data/report.sqlite data/capture.sqlite data/scoring.sqlite"
@@ -431,7 +431,7 @@ private function cleanAmcTxt($text)
     if ($isArabic) {
         $command = $this->buildArabicGenerationCommand($wslPath, $copies, $zipName);
     } else {
-        $command = "wsl bash -c " . escapeshellarg(
+        $command = (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg(
         "cd $wslPath && " .
         "export LC_ALL=C.UTF-8 && " .
         "rm -f state.html && " .
@@ -526,7 +526,7 @@ if (!$this->amcLayoutIsValid($layoutFile)) {
     }
 
     // 2. Donner les droits au PDF
-    exec("wsl chmod 666 $wslPath/DOC-sujet.pdf");
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl chmod " : "chmod ") . "666 $wslPath/DOC-sujet.pdf");
     @chmod($pdfFile, 0777);
 
     // 3. Logger si le layout est invalide, MAIS ne pas bloquer le téléchargement
@@ -1032,21 +1032,21 @@ private function prepareAmcProject($workDir, $wslPath)
         }
     }
 
-    exec("wsl chmod -R 777 " . escapeshellarg($wslPath));
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl chmod " : "chmod ") . "-R 777 " . escapeshellarg($wslPath));
 }
 
 public function openInAmcGui(Exam $exam) {
-    $wslPath = "/mnt/c/Users/hp/amcortex/storage/app/amc/exam_{$exam->id}";
-    exec("wsl DISPLAY=:0 auto-multiple-choice gui " . escapeshellarg($wslPath) . " > /dev/null 2>&1 &");
+    [$workDir, $wslPath] = $this->getExamPaths($exam->id);
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl DISPLAY=:0 auto-multiple-choice " : "auto-multiple-choice ") . "gui " . escapeshellarg($wslPath) . " > /dev/null 2>&1 &");
     return back()->with('success', "L'interface AMC est en cours d'ouverture...");
 }
 
 
 public function calculateLayout(Exam $exam) {
     $workDir = storage_path("app/amc/" . $this->examFolderName($exam));
-    $wslPath = "/mnt/c" . str_replace('\\','/', substr($workDir, 2));
+    $wslPath = PHP_OS_FAMILY === 'Windows' ? "/mnt/c" . str_replace('\\','/', substr($workDir, 2)) : str_replace('\\', '/', $workDir);
 
-    $command = "wsl bash -c " . escapeshellarg(
+    $command = (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg(
         "cd $wslPath && auto-multiple-choice prepare --mode f --filter plain --prefix DOC- --data ./data source.txt"
     );
 
@@ -1071,14 +1071,16 @@ public function downloadArchive(Exam $exam)
 }
 
 public function openAssociationGui(Exam $exam) {
-    $wslPath = "/mnt/c" . str_replace(['C:', '\\'], ['', '/'], storage_path("app/amc/exam_{$exam->id}"));
-    exec("wsl DISPLAY=:0 auto-multiple-choice gui " . escapeshellarg($wslPath) . " > /dev/null 2>&1 &");
+    [$workDir, $wslPath] = $this->getExamPaths($exam->id);
+    exec((PHP_OS_FAMILY === 'Windows' ? "wsl DISPLAY=:0 auto-multiple-choice " : "auto-multiple-choice ") . "gui " . escapeshellarg($wslPath) . " > /dev/null 2>&1 &");
     return back()->with('success', "L'interface AMC s'ouvre pour associer manuellement les copies.");
 }
 
 private function getExamPaths(int $examId): array
 {
-    $workDir = $this->normalizePhpPath(storage_path("app/amc/exam_{$examId}"));
+    $exam = Exam::findOrFail($examId);
+    $folderName = $this->examFolderName($exam);
+    $workDir = $this->normalizePhpPath(storage_path("app/amc/{$folderName}"));
 
     if (preg_match('/^[A-Za-z]:\\\\/', $workDir)) {
         $drive = strtolower($workDir[0]);
@@ -1342,7 +1344,7 @@ private function buildArabicAmcTxt(Exam $exam, $layoutMode, $idLength, $mode = '
 
 private function buildArabicGenerationCommand(string $wslPath, int $copies, string $zipName): string
 {
-    return "wsl bash -c " . escapeshellarg(
+    return (PHP_OS_FAMILY === 'Windows' ? "wsl bash -c " : "bash -c ") . escapeshellarg(
         "cd $wslPath && " .
         "export LC_ALL=C.UTF-8 && " .
         "rm -f state.html && " .
