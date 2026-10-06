@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxtst6 \
     ca-certificates \
     fonts-liberation \
+    fonts-linuxlibertine \
     libnss3 \
     lsb-release \
     xdg-utils \
