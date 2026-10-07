@@ -77,14 +77,21 @@
                 Examens
             </a>
 
-            <a href="{{ route('admin.statistics') }}"
-               class="flex items-center gap-3 px-5 py-4 rounded-2xl font-black
-               {{ request()->routeIs('admin.statistics') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
-                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                Statistiques
-            </a>
+        <a href="{{ route('admin.statistics') }}"
+           class="flex items-center gap-3 px-5 py-4 rounded-2xl font-black
+           {{ request()->routeIs('admin.statistics') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            Statistiques
+        </a>
 
-        </nav>
+        <a href="{{ route('admin.settings') }}"
+           class="flex items-center gap-3 px-5 py-4 rounded-2xl font-black
+           {{ request()->routeIs('admin.settings') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+            Paramètres
+        </a>
+
+    </nav>
 
         <form action="{{ route('logout') }}" method="POST">
             @csrf

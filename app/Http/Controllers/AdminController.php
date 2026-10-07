@@ -273,4 +273,55 @@ class AdminController extends Controller
     ));
 }
 
+    public function settings()
+    {
+        return view('admin.settings');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
+        ], [
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'email.unique' => 'Cette adresse email est déjà associée à un compte.',
+        ]);
+
+        auth()->user()->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+        ]);
+
+        return back()->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
+            'password.required' => 'Le nouveau mot de passe est obligatoire.',
+            'password.min' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+        ]);
+
+        if (!Hash::check($request->current_password, auth()->user()->password)) {
+            return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.']);
+        }
+
+        auth()->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Mot de passe modifié avec succès.');
+    }
+
 }

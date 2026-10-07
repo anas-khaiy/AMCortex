@@ -241,6 +241,10 @@ Route::middleware(['auth', 'admin'])
         Route::get('/students', [AdminController::class, 'students'])->name('students');
         Route::get('/exams', [AdminController::class, 'exams'])->name('exams');
 
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::put('/settings/profile', [AdminController::class, 'updateProfile'])->name('settings.profile');
+        Route::put('/settings/password', [AdminController::class, 'updatePassword'])->name('settings.password');
+
         Route::get('/statistics', [AdminController::class, 'statistics'])
             ->name('statistics');
 });
