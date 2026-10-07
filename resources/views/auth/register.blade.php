@@ -32,6 +32,20 @@
             </div>
             
             <div class="flex-1 flex flex-col justify-center">
+                @if($errors->any())
+                    <div class="mb-6 bg-red-50 border border-red-100 rounded-2xl p-4">
+                        <div class="flex items-center gap-2 text-red-600 mb-2 font-bold text-sm">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            Veuillez corriger les erreurs suivantes :
+                        </div>
+                        <ul class="list-disc list-inside text-sm text-red-500 space-y-1 ml-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ route('register') }}" method="POST" class="space-y-4">
                     @csrf
                     <div class="grid grid-cols-2 gap-4">
@@ -43,6 +57,7 @@
 
                             <input type="text"
                                    name="first_name"
+                                   value="{{ old('first_name') }}"
                                    required
                                    class="w-full px-4 py-4 rounded-2xl border border-[#EFE6DE] bg-[#EFE6DE] focus:border-[#9A0002] focus:outline-none">
                         </div>
@@ -54,6 +69,7 @@
 
                             <input type="text"
                                    name="last_name"
+                                   value="{{ old('last_name') }}"
                                    required
                                    class="w-full px-4 py-4 rounded-2xl border border-[#EFE6DE] bg-[#EFE6DE] focus:border-[#9A0002] focus:outline-none">
                         </div>
@@ -67,13 +83,14 @@
 
                         <input type="text"
                                name="username"
+                               value="{{ old('username') }}"
                                required
                                class="w-full px-4 py-4 rounded-2xl border border-[#EFE6DE] bg-[#EFE6DE] focus:border-[#9A0002] focus:outline-none">
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email</label>
-                        <input type="email" name="email" placeholder="prof@universite.ma" required
+                        <input type="email" name="email" placeholder="prof@universite.ma" value="{{ old('email') }}" required
                             class="w-full px-4 py-4 rounded-2xl 
                             border border-[#EFE6DE] 
                             bg-[#EFE6DE] 

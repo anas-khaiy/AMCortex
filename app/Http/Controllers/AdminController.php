@@ -39,10 +39,25 @@ class AdminController extends Controller
         ));
     }
 
-    public function teachers()
+    public function teachers(Request $request)
     {
-        $teachers = User::where('role', 'teacher')->latest()->paginate(10);
-        return view('admin.teachers', compact('teachers'));
+        $search = $request->input('search');
+
+        $teachers = User::where('role', 'teacher')
+            ->where('is_approved', true)
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('username', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.teachers', compact('teachers', 'search'));
     }
 
     public function createTeacher()
@@ -58,6 +73,17 @@ class AdminController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|min:8|confirmed',
+        ], [
+            'username.required' => 'Le nom d\'utilisateur est obligatoire.',
+            'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'email.unique' => 'Cette adresse email est déjà associée à un compte.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         User::create([
@@ -67,6 +93,7 @@ class AdminController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => 'teacher',
+            'is_approved' => true,
         ]);
 
         return redirect()->route('admin.teachers')->with('success', 'Enseignant ajouté avec succès.');
@@ -93,6 +120,16 @@ class AdminController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8|confirmed',
+        ], [
+            'username.required' => 'Le nom d\'utilisateur est obligatoire.',
+            'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'email.unique' => 'Cette adresse email est déjà associée à un compte.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         $user->update([
@@ -122,14 +159,44 @@ class AdminController extends Controller
         return back()->with('success', 'Enseignant supprimé.');
     }
 
-    public function students()
+    public function approbations()
     {
+        $teachers = User::where('role', 'teacher')
+            ->where('is_approved', false)
+            ->latest()
+            ->paginate(10);
+        return view('admin.approbations', compact('teachers'));
+    }
+
+    public function approveTeacher(User $user)
+    {
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Action non valide.');
+        }
+
+        $user->update(['is_approved' => true]);
+
+        return back()->with('success', 'Enseignant approuvé avec succès.');
+    }
+
+    public function students(Request $request)
+    {
+        $search = $request->input('search');
+
         $students = Student::with('teacher')
             ->where('student_code', 'not like', 'TMP%')
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%")
+                      ->orWhere('student_code', 'like', "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.students', compact('students'));
+        return view('admin.students', compact('students', 'search'));
     }
 
     public function exams()

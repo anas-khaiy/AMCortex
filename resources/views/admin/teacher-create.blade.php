@@ -23,6 +23,26 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="rounded-2xl bg-green-50 border border-green-100 text-green-700 px-5 py-4 font-bold">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="rounded-2xl bg-red-50 border border-red-100 p-4">
+            <div class="flex items-center gap-2 text-red-600 mb-2 font-bold text-sm">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                Veuillez corriger les erreurs suivantes :
+            </div>
+            <ul class="list-disc list-inside text-sm text-red-500 space-y-1 ml-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white rounded-[2.5rem] border border-[#EFE6DE] shadow-xl p-8">
 
         <form action="{{ route('admin.teachers.store') }}" method="POST" class="space-y-6">

@@ -30,8 +30,8 @@
             </div>
 
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">{{ __('Bon retour') }}</h1>
-                <p class="text-gray-500 font-medium">{{ __('Connectez-vous à votre espace enseignant.') }}</p>
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">{{ __('AMCortex - Portail') }}</h1>
+                <p class="text-gray-500 font-medium">{{ __('Espace Enseignants & Administration') }}</p>
             </div>
 
             <div class="w-full max-w-md flex-1 flex flex-col justify-center">
@@ -40,19 +40,20 @@
                         {{ $errors->first() }}
                     </div>
                 @endif
+                @if(session('success'))
+                    <div class="mb-4 text-sm text-green-700 bg-green-50 p-3 rounded-xl border border-green-200 font-medium">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
                 <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
                     
                     <div>
-                        <div class="flex justify-between items-center mb-1.5 ml-1">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">{{ __('Adresse e-mail') }}</label>
-                            <a href="{{ route('forgot.email') }}"
-                                class="text-xs font-bold text-[#9A0002] hover:text-red-700">
-                                Adresse email oubliée ?
-                            </a>
+                        <div class="mb-1.5 ml-1">
+                            <label class="block text-sm font-semibold text-gray-700">{{ __('Adresse e-mail / Nom d\'utilisateur') }}</label>
                         </div>
-                        <input type="email" name="login" placeholder="entrez votre email" required
+                        <input type="text" name="login" placeholder="entrez votre email ou username" required
                             class="w-full px-4 py-4 rounded-2xl 
                             border border-[#EFE6DE] 
                             bg-[#EFE6DE] 
@@ -64,11 +65,8 @@
                     </div>
 
                     <div>
-                        <div class="flex justify-between items-center mb-1.5 ml-1">
+                        <div class="mb-1.5 ml-1">
                             <label class="text-sm font-semibold text-gray-700">{{ __('Mot de passe') }}</label>
-                            <a href="{{ route('password.request') }}" class="text-xs font-bold text-[#9A0002] hover:text-red-700">
-                                {{ __('Mot de passe oublié ?') }}
-                            </a>
                         </div>
                         <input type="password" name="password" placeholder="••••••••••••" required
                             class="w-full px-4 py-4 rounded-2xl 

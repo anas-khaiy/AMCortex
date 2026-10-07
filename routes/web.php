@@ -235,6 +235,9 @@ Route::middleware(['auth', 'admin'])
         Route::put('/teachers/{user}', [AdminController::class, 'updateTeacher'])->name('teachers.update');
         Route::delete('/teachers/{user}', [AdminController::class, 'deleteTeacher'])->name('teachers.delete');
 
+        Route::get('/approbations', [AdminController::class, 'approbations'])->name('approbations');
+        Route::patch('/teachers/{user}/approve', [AdminController::class, 'approveTeacher'])->name('teachers.approve');
+
         Route::get('/students', [AdminController::class, 'students'])->name('students');
         Route::get('/exams', [AdminController::class, 'exams'])->name('exams');
 

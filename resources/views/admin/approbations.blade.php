@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestion des enseignants')
+@section('title', 'Demandes d\'approbation')
 
 @section('content')
 <div class="space-y-8">
@@ -23,9 +23,9 @@
 
         <div class="relative">
             <p class="text-sm font-black uppercase tracking-widest text-[#9A0002]">Utilisateurs</p>
-            <h1 class="text-4xl font-black text-gray-950 mt-2">Enseignants</h1>
+            <h1 class="text-4xl font-black text-gray-950 mt-2">Demandes d'inscription</h1>
             <p class="text-gray-500 mt-2 font-medium">
-                Consultez et gérez les comptes enseignants de la plateforme.
+                Consultez et approuvez les nouveaux comptes enseignants.
             </p>
         </div>
     </div>
@@ -33,24 +33,10 @@
     {{-- TABLE --}}
     <div class="bg-white rounded-[2.5rem] border border-[#EFE6DE] shadow-xl overflow-hidden">
 
-        <div class="p-6 border-b border-[#EFE6DE] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="p-6 border-b border-[#EFE6DE] flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-black text-gray-950">Liste des enseignants</h2>
-                <p class="text-gray-500 text-sm mt-1">Tous les comptes avec le rôle professeur.</p>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <form action="{{ route('admin.teachers') }}" method="GET" class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher..." 
-                           class="pl-10 pr-4 py-3 rounded-2xl border border-[#EFE6DE] bg-[#FAF7F4] focus:border-[#9A0002] outline-none text-sm w-full md:w-64">
-                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
-                </form>
-
-                <a href="{{ route('admin.teachers.create') }}"
-                   class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#9A0002] text-white font-black hover:bg-[#7A0001] shrink-0">
-                    <i data-lucide="user-plus" class="w-5 h-5"></i>
-                    Ajouter
-                </a>
+                <h2 class="text-2xl font-black text-gray-950">Enseignants en attente</h2>
+                <p class="text-gray-500 text-sm mt-1">Comptes nécessitant une approbation pour accéder à la plateforme.</p>
             </div>
         </div>
 
@@ -94,21 +80,24 @@
                                 {{ $teacher->created_at->format('d/m/Y') }}
                             </td>
 
-                            <td class="p-5 text-right">
-                                <a href="{{ route('admin.teachers.edit', $teacher->id) }}"
-                                   class="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-[#FAF7F4] border border-[#EFE6DE] text-gray-700 font-black hover:bg-[#9A0002] hover:text-white transition">
-                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                    Modifier
-                                </a>
+                            <td class="p-5 text-right flex justify-end gap-2">
+                                <form action="{{ route('admin.teachers.approve', $teacher->id) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-green-50 text-green-600 font-black hover:bg-green-600 hover:text-white transition">
+                                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                        Approuver
+                                    </button>
+                                </form>
                                 <form action="{{ route('admin.teachers.delete', $teacher->id) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Supprimer cet enseignant ? Cette action peut supprimer son accès à la plateforme.')">
+                                      onsubmit="return confirm('Rejeter et supprimer cet enseignant ?')">
                                     @csrf
                                     @method('DELETE')
 
                                     <button class="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-red-50 text-red-600 font-black hover:bg-red-600 hover:text-white transition">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                        Supprimer
+                                        <i data-lucide="x-circle" class="w-4 h-4"></i>
+                                        Rejeter
                                     </button>
                                 </form>
                             </td>
@@ -116,7 +105,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="p-10 text-center text-gray-500 font-bold">
-                                Aucun enseignant trouvé.
+                                Aucune demande en attente.
                             </td>
                         </tr>
                     @endforelse

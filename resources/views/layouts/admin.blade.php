@@ -17,8 +17,11 @@
 
 <div class="flex min-h-screen">
 
+    {{-- OVERLAY MOBILE --}}
+    <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity opacity-0" onclick="toggleMobileSidebar()"></div>
+
     {{-- SIDEBAR --}}
-    <aside class="w-72 bg-white border-r border-[#EFE6DE] p-6 flex flex-col">
+    <aside id="sidebar" class="fixed md:relative z-50 w-72 bg-white border-r border-[#EFE6DE] p-6 flex flex-col min-h-screen transition-transform duration-300 -translate-x-full md:translate-x-0">
 
         <div class="flex items-center gap-3 mb-10">
             <div class="w-14 h-14 rounded-2xl bg-[#9A0002] text-white flex items-center justify-center">
@@ -41,9 +44,16 @@
 
             <a href="{{ route('admin.teachers') }}"
                class="flex items-center gap-3 px-5 py-4 rounded-2xl font-black
-               {{ request()->routeIs('admin.teachers*') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
+               {{ request()->routeIs('admin.teachers') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
                 <i data-lucide="users" class="w-5 h-5"></i>
                 Enseignants
+            </a>
+
+            <a href="{{ route('admin.approbations') }}"
+               class="flex items-center gap-3 px-5 py-4 rounded-2xl font-black
+               {{ request()->routeIs('admin.approbations') ? 'bg-[#9A0002] text-white' : 'text-gray-600 hover:bg-[#9A0002]/10 hover:text-[#9A0002]' }}">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+                Approbations
             </a>
 
             <a href="{{ route('admin.teachers.create') }}"
@@ -89,10 +99,15 @@
     {{-- MAIN --}}
     <main class="flex-1">
 
-        <header class="h-24 bg-white/80 border-b border-[#EFE6DE] px-8 flex items-center justify-between">
-            <div>
-                <p class="text-xs font-black uppercase tracking-widest text-[#9A0002]">Administration</p>
-                <h2 class="text-2xl font-black text-gray-950">@yield('title')</h2>
+        <header class="sticky top-0 z-[9999] h-24 bg-white/80 backdrop-blur-xl border-b border-[#EFE6DE] px-8 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMobileSidebar()" class="md:hidden p-2 -ml-2 text-gray-600 hover:text-[#9A0002] rounded-xl hover:bg-[#9A0002]/10 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-[#9A0002]">Administration</p>
+                    <h2 class="text-2xl font-black text-gray-950">@yield('title')</h2>
+                </div>
             </div>
 
             <div class="flex items-center gap-3">
@@ -145,6 +160,18 @@
 
 <script>
     lucide.createIcons();
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+        
+        setTimeout(() => {
+            overlay.classList.toggle('opacity-0');
+        }, 10);
+    }
 </script>
 
 </body>

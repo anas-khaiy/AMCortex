@@ -32,12 +32,15 @@
 <body class="bg-[#FAF7F4] text-gray-900">
 
 <div class="flex min-h-screen overflow-hidden">
+        {{-- OVERLAY MOBILE --}}
+        <div id="sidebar-overlay" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity opacity-0" onclick="toggleMobileSidebar()"></div>
+
         {{-- SIDEBAR --}}
         <aside id="sidebar"
-               class="w-72 bg-white text-gray-800 border-r border-[#EFE6DE] flex-shrink-0 flex flex-col transition-all duration-300 relative min-h-screen">
+               class="fixed md:relative z-50 w-72 bg-white text-gray-800 border-r border-[#EFE6DE] flex-shrink-0 flex flex-col transition-transform duration-300 min-h-screen -translate-x-full md:translate-x-0">
 
             <button onclick="toggleSidebar()"
-                    class="absolute -right-4 top-24 w-9 h-9 rounded-full bg-white text-[#9A0002] shadow-xl flex items-center justify-center z-30">
+                    class="hidden md:flex absolute -right-4 top-24 w-9 h-9 rounded-full bg-white text-[#9A0002] shadow-xl items-center justify-center z-30">
                 <i id="toggle-icon" data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>
 
@@ -111,7 +114,7 @@
         <div class="flex-1 flex flex-col min-w-0 bg-[#FAF7F4]">
 
             {{-- TOPBAR --}}
-            <header class="relative z-[9999] h-24 bg-white/80 backdrop-blur-xl border-b border-[#EFE6DE] flex items-center justify-between px-8 shrink-0">
+            <header class="sticky top-0 z-[9999] h-24 bg-white/80 backdrop-blur-xl border-b border-[#EFE6DE] flex items-center justify-between px-8 shrink-0">
 
                 <div class="hidden md:flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-[#9A0002]/10 text-[#9A0002] flex items-center justify-center">
@@ -129,6 +132,9 @@
                 </div>
 
                 <div class="md:hidden flex items-center gap-3">
+                    <button onclick="toggleMobileSidebar()" class="p-2 -ml-2 text-gray-600 hover:text-[#9A0002] rounded-xl hover:bg-[#9A0002]/10 transition-colors">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
                     <div class="w-10 h-10 rounded-2xl bg-[#9A0002] text-white flex items-center justify-center">
                         <i data-lucide="brain-circuit" class="w-5 h-5"></i>
                     </div>
@@ -215,6 +221,40 @@
             {{-- CONTENT --}}
             <main class="flex-1 overflow-y-auto p-8">
                 
+                @if(session('success'))
+                    <div class="mb-6 rounded-2xl bg-green-50 border border-green-100 p-4 text-green-700 flex items-start gap-3">
+                        <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-black">Succès</p>
+                            <p class="text-sm font-semibold mt-1">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="mb-6 rounded-2xl bg-red-50 border border-red-100 p-4 text-red-700 flex items-start gap-3">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-black">Erreur</p>
+                            <p class="text-sm font-semibold mt-1">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="mb-6 rounded-2xl bg-amber-50 border border-amber-100 p-4 text-amber-700 flex items-start gap-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-black">Validation</p>
+                            <ul class="text-sm font-semibold mt-1 space-y-1 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
@@ -252,6 +292,19 @@
 
 <script>
     lucide.createIcons();
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+        
+        // Small delay to allow display:block to apply before opacity transition
+        setTimeout(() => {
+            overlay.classList.toggle('opacity-0');
+        }, 10);
+    }
 
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');

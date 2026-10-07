@@ -28,6 +28,17 @@ class AuthController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+        ], [
+            'username.required' => 'Le nom d\'utilisateur est obligatoire.',
+            'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'email.unique' => 'Cette adresse email est déjà associée à un compte.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         $user = User::create([
@@ -37,10 +48,10 @@ class AuthController extends Controller
             'name' => trim($request->first_name . ' ' . $request->last_name),
             'email' => $request->email,
             'password' => Hash::make($request->password), // Cryptage du mot de passe
+            'is_approved' => false,
         ]);
 
-        Auth::login($user); 
-        return redirect()->route('dashboard');
+        return redirect()->route('login')->with('success', 'Inscription réussie. Votre compte est en attente d\'approbation par l\'administrateur.');
     }
 
     // Logique de Connexion
@@ -62,8 +73,15 @@ class AuthController extends Controller
         ];
 
         if (Auth::attempt($credentials)) {
+            $user = auth()->user();
+
+            if ($user->role !== 'admin' && !$user->is_approved) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Votre compte est en attente d\'approbation par l\'administrateur.']);
+            }
+
             $request->session()->regenerate();
-            if (auth()->user()->role === 'admin') {
+            if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
 
@@ -105,6 +123,14 @@ public function updateProfile(Request $request)
         'first_name' => 'required|string|max:255',
         'last_name' => 'required|string|max:255',
         'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
+    ], [
+        'username.required' => 'Le nom d\'utilisateur est obligatoire.',
+        'username.unique' => 'Ce nom d\'utilisateur est déjà utilisé.',
+        'first_name.required' => 'Le prénom est obligatoire.',
+        'last_name.required' => 'Le nom est obligatoire.',
+        'email.required' => 'L\'adresse email est obligatoire.',
+        'email.email' => 'L\'adresse email n\'est pas valide.',
+        'email.unique' => 'Cette adresse email est déjà associée à un compte.',
     ]);
 
     auth()->user()->update([
@@ -124,6 +150,11 @@ public function updatePassword(Request $request)
     $request->validate([
         'current_password' => 'required',
         'password' => 'required|string|min:8|confirmed',
+    ], [
+        'current_password.required' => 'Le mot de passe actuel est obligatoire.',
+        'password.required' => 'Le nouveau mot de passe est obligatoire.',
+        'password.min' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+        'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
     ]);
 
     if (!Hash::check($request->current_password, auth()->user()->password)) {

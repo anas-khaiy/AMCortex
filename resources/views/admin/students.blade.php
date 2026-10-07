@@ -7,10 +7,19 @@
 
     <div class="bg-white rounded-[2.5rem] border border-[#EFE6DE] shadow-xl overflow-hidden">
 
-        <div class="p-6 border-b border-[#EFE6DE]">
-            <h2 class="text-3xl font-black text-gray-950">
-                Liste des étudiants
-            </h2>
+        <div class="p-6 border-b border-[#EFE6DE] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-3xl font-black text-gray-950">
+                    Liste des étudiants
+                </h2>
+                <p class="text-gray-500 text-sm mt-1">Gérez tous les étudiants inscrits sur la plateforme.</p>
+            </div>
+            
+            <form action="{{ route('admin.students') }}" method="GET" class="relative w-full md:w-64">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher par nom, prénom ou code..." 
+                       class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#EFE6DE] bg-[#FAF7F4] focus:border-[#9A0002] outline-none text-sm">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+            </form>
         </div>
 
         <div class="overflow-x-auto">
